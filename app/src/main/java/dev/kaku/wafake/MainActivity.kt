@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         val pager = findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.pager)
         val tabs = findViewById<com.google.android.material.tabs.TabLayout>(R.id.tabs)
 
-        val pages = listOf(
+        val pages: List<Pair<String, () -> Fragment>> = listOf(
             "Сообщения" to { FakesFragment() },
             "Архив" to { VaultFragment() },
             "Настройка" to { SetupFragment() },

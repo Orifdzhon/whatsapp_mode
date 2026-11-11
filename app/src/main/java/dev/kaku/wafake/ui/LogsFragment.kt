@@ -5,8 +5,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.topjohnwu.superuser.Shell
 import dev.kaku.wafake.R
+import dev.kaku.wafake.util.RootShell
 
 class LogsFragment : Fragment(R.layout.fragment_logs) {
 
@@ -21,12 +21,9 @@ class LogsFragment : Fragment(R.layout.fragment_logs) {
     private fun refresh() {
         text.text = "читаю..."
         Thread {
-            val out = runCatching {
-                Shell.getShell()
-                val r = Shell.cmd("logcat -d -s WAFake:V -t 400").exec()
-                r.out.joinToString("\n")
-            }.getOrDefault("")
+            val out = RootShell.exec("logcat -d -s WAFake:V -t 400", timeoutSec = 15)
             activity?.runOnUiThread {
+                if (!isAdded) return@runOnUiThread
                 text.text = out.ifBlank {
                     "пусто.\n\nварианты:\n" +
                         "— модуль не активирован в LSPosed\n" +

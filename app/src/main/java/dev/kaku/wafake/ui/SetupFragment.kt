@@ -9,9 +9,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.materialswitch.MaterialSwitch
-import com.topjohnwu.superuser.Shell
 import dev.kaku.wafake.R
 import dev.kaku.wafake.overlay.FakeOverlayService
+import dev.kaku.wafake.util.RootShell
 
 class SetupFragment : Fragment(R.layout.fragment_setup) {
 
@@ -40,7 +40,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         overlaySwitch.isChecked = prefs.getBoolean(KEY_OVERLAY, true)
         overlaySwitch.setOnCheckedChangeListener { _, v ->
             prefs.edit().putBoolean(KEY_OVERLAY, v).commit()
-            // сам сервис запускается системой; тумблер только разрешает отрисовку
         }
 
         check()
@@ -52,40 +51,30 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     }
 
     private fun check() {
-        val root = hasRoot()
-        rootStatus.text = if (root) "root: есть" else "root: нет (доступен только режим B)"
-
-        val lsposed = hasLsposed()
-        lsposedStatus.text = if (lsposed) "LSPosed: установлен" else "LSPosed: не найден"
-
-        scopeStatus.text = when {
-            !root -> "scope com.whatsapp: нужен root"
-            else -> "scope com.whatsapp: " + scopeState()
-        }
-
-        val a11y = isAccessibilityEnabled()
-        a11yStatus.text = if (a11y) "спец. возможности: включены" else "спец. возможности: выключены"
+        Thread {
+            val root = RootShell.hasRoot()
+            val lsposed = hasLsposed()
+            val scope = if (root) scopeState() else "нужен root"
+            val a11y = isAccessibilityEnabled()
+            activity?.runOnUiThread {
+                if (!isAdded) return@runOnUiThread
+                rootStatus.text = if (root) "root: есть" else "root: нет (доступен только режим B)"
+                lsposedStatus.text = if (lsposed) "LSPosed: установлен" else "LSPosed: не найден"
+                scopeStatus.text = "scope com.whatsapp: $scope"
+                a11yStatus.text = if (a11y) "спец. возможности: включены" else "спец. возможности: выключены"
+            }
+        }.start()
     }
-
-    private fun hasRoot(): Boolean = runCatching {
-        Shell.getShell()
-        Shell.isAppGrantedRoot() == true
-    }.getOrDefault(false)
 
     private fun hasLsposed(): Boolean = runCatching {
         requireContext().packageManager.getPackageInfo("org.lsposed.manager", 0)
         true
     }.getOrDefault(false)
 
-    private fun sh(cmd: String): String = runCatching {
-        val r = Shell.cmd(cmd).exec()
-        r.out.joinToString("\n")
-    }.getOrDefault("")
-
     private fun sql(sql: String): String {
-        val magisk = sh("magisk --sqlite \"$sql\"")
+        val magisk = RootShell.exec("magisk --sqlite \"$sql\"")
         if (magisk.isNotBlank()) return magisk
-        return sh("sqlite3 /data/adb/lspd/config/modules_config.db \"$sql\"")
+        return RootShell.exec("sqlite3 /data/adb/lspd/config/modules_config.db \"$sql\"")
     }
 
     private fun moduleId(): String {
@@ -101,27 +90,34 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     }
 
     private fun enableModule() {
-        if (!hasRoot()) {
+        if (!RootShell.hasRoot()) {
             toast("нужен root — режим A недоступен")
             return
         }
 
-        val mid = moduleId()
-        if (mid.isEmpty()) {
-            toast("открой LSPosed один раз, модуль появится в списке")
-            return
-        }
+        toast("включаю...")
+        Thread {
+            val mid = moduleId()
+            if (mid.isEmpty()) {
+                activity?.runOnUiThread {
+                    toast("открой LSPosed один раз, модуль появится в списке")
+                }
+                return@Thread
+            }
 
-        sql("UPDATE modules SET enabled=1 WHERE mid='$mid'")
-        sql("INSERT OR IGNORE INTO scope(mid, app_pkg_name, user_id) VALUES('$mid','com.whatsapp',0)")
+            sql("UPDATE modules SET enabled=1 WHERE mid='$mid'")
+            sql("INSERT OR IGNORE INTO scope(mid, app_pkg_name, user_id) VALUES('$mid','com.whatsapp',0)")
 
-        check()
-        toast("модуль включён. перезапусти WhatsApp")
+            activity?.runOnUiThread {
+                check()
+                toast("модуль включён. перезапусти WhatsApp")
+            }
+        }.start()
     }
 
     private fun restartWhatsApp() {
         Thread {
-            sh("am force-stop com.whatsapp")
+            RootShell.exec("am force-stop com.whatsapp")
             activity?.runOnUiThread { toast("WhatsApp остановлен. открой его заново") }
         }.start()
     }
@@ -136,7 +132,10 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         return enabled.split(':').any { it.equals(expected, ignoreCase = true) }
     }
 
-    private fun toast(msg: String) = Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+    private fun toast(msg: String) {
+        if (!isAdded) return
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+    }
 
     companion object {
         const val KEY_OVERLAY = "overlay_enabled"

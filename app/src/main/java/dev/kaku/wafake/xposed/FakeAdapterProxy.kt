@@ -73,8 +73,6 @@ class FakeAdapterProxy(
     override fun getItemId(position: Int): Long =
         if (position >= inner.itemCount) -(position.toLong() + 1L) else inner.getItemId(position)
 
-    override fun hasStableIds(): Boolean = inner.hasStableIds()
-
     fun detach() = runCatching { inner.unregisterAdapterDataObserver(observer) }
 
     class FakeHolder(view: android.view.View) : RecyclerView.ViewHolder(view) {

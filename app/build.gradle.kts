@@ -37,14 +37,12 @@ android {
 
 dependencies {
     compileOnly("de.robv.android.xposed:api:82")
-    compileOnly("androidx.recyclerview:recyclerview:1.3.2")
+    // RecyclerView comes in transitively via viewpager2; in WhatsApp it is
+    // provided by the host APK, so we never pin our own version.
 
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.viewpager2:viewpager2:1.1.0")
     implementation("com.google.android.material:material:1.11.0")
-
-    // root shell + service binding, no PC needed
-    implementation("com.github.topjohnwu.libsu:core:5.2.2")
 }
