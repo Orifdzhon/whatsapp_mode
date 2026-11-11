@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Режим A — внедрение в WhatsApp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            android:alpha="0.6"
+            android:text="Нужен root и LSPosed. Даёт фейки в настоящем чате и архив удалённых/одноразовых." />
+
+        <TextView
+            android:id="@+id/status_root"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="root: проверка..." />
+
+        <TextView
+            android:id="@+id/status_lsposed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LSPosed: проверка..." />
+
+        <TextView
+            android:id="@+id/status_scope"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="scope com.whatsapp: неизвестно" />
+
+        <Button
+            android:id="@+id/btn_check"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Проверить состояние" />
+
+        <Button
+            android:id="@+id/btn_enable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Включить модуль в LSPosed" />
+
+        <Button
+            android:id="@+id/btn_restart_wa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Перезапустить WhatsApp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:background="?android:attr/listDivider" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Режим B — оверлей поверх WhatsApp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            android:alpha="0.6"
+            android:text="Root не нужен. Фейковые пузыри рисуются поверх открытого чата. Архив удалённых в этом режиме недоступен." />
+
+        <TextView
+            android:id="@+id/status_a11y"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="спец. возможности: проверка..." />
+
+        <Button
+            android:id="@+id/btn_a11y"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Открыть настройки спец. возможностей" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/sw_overlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Показывать фейки в оверлее" />
+
+    </LinearLayout>
+</ScrollView>
